@@ -838,11 +838,6 @@ message += `──────────\n`;
     if (observacoes) {
         message += `Observações: ${observacoes}\n`;
     }
-// Abrir WhatsApp com delay para garantir que Firebase salvou primeiro
-setTimeout(function() {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.parent.window.open(whatsappUrl, '_blank');
-}, 1000);
 // ===== SALVAR NO FIREBASE =====
 var pedido = {
     nome: nome,
@@ -867,8 +862,15 @@ var pedido = {
     timestamp: Date.now()
 };
 
+// Salvar no Firebase E DEPOIS abrir WhatsApp
 database.ref('pedidos/' + Date.now()).set(pedido).then(function() {
     alert('✅ Pedido salvo com sucesso!');
+    
+    // AGORA sim, abrir WhatsApp (DEPOIS que salvou)
+    setTimeout(function() {
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.parent.window.open(whatsappUrl, '_blank');
+    }, 500);
 }).catch(function(error) {
     alert('❌ Erro ao salvar: ' + error.message);
 });
