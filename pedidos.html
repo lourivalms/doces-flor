@@ -867,10 +867,24 @@ database.ref('pedidos/' + Date.now()).set(pedido).then(function() {
     alert('✅ Pedido salvo com sucesso!');
     
     // AGORA sim, abrir WhatsApp (DEPOIS que salvou)
-    setTimeout(function() {
+setTimeout(function() {
+    // No celular, abre apenas o WhatsApp sem mensagem
+    // No desktop, abre com a mensagem
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        // CELULAR - abre WhatsApp sem mensagem
+        const whatsappUrl = `https://wa.me/`;
+        window.parent.window.open(whatsappUrl, '_blank');
+        
+        // Copia a mensagem para clipboard
+        navigator.clipboard.writeText(message).then(() => {
+            alert('✅ Mensagem copiada! Cole no WhatsApp quando abrir.');
+        });
+    } else {
+        // DESKTOP - abre com a mensagem
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.parent.window.open(whatsappUrl, '_blank');
-    }, 500);
+    }
+}, 1000);
 }).catch(function(error) {
     alert('❌ Erro ao salvar: ' + error.message);
 });
