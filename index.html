@@ -669,49 +669,73 @@ function abrirAba(nomeAba) {
         }
 
         // ===== FUNÇÕES DOS PEDIDOS =====
-        function carregarPedidosAndamento() {
-            var listDiv = document.getElementById('lista-andamento');
-            listDiv.innerHTML = '<p>Carregando...</p>';
-
-            database.ref('pedidos').once('value', function(snapshot) {
-                var pedidos = snapshot.val();
-                listDiv.innerHTML = '';
-
-                if (!pedidos) {
-                    listDiv.innerHTML = '<p>Nenhum pedido em andamento</p>';
-                    return;
-                }
-
-                Object.keys(pedidos).forEach(function(key) {
-                    var pedido = pedidos[key];
-                    if (pedido.statusPagamento !== 'entregue') {
-                        listDiv.appendChild(criarCardPedido(pedido, key));
-                    }
-                });
-            });
+function carregarPedidosAndamento() {
+    var listDiv = document.getElementById('lista-andamento');
+    listDiv.innerHTML = '<p>Carregando...</p>';
+    database.ref('pedidos').once('value', function(snapshot) {
+        var pedidosObj = snapshot.val();
+        listDiv.innerHTML = '';
+        if (!pedidosObj) {
+            listDiv.innerHTML = '<p>Nenhum pedido em andamento</p>';
+            return;
         }
+        
+        // Converter para array e filtrar
+        var pedidosArray = [];
+        Object.keys(pedidosObj).forEach(function(key) {
+            var pedido = pedidosObj[key];
+            if (pedido.statusPagamento !== 'entregue') {
+                pedidosArray.push({ key: key, ...pedido });
+            }
+        });
+        
+        // ORDENAR por DATA DE ENTREGA (mais antigos primeiro)
+        pedidosArray.sort((a, b) => {
+            var dataA = a.data.split('/').reverse().join('');
+            var dataB = b.data.split('/').reverse().join('');
+            return dataA - dataB;
+        });
+        
+        // Renderizar os pedidos ordenados
+        pedidosArray.forEach(function(pedido) {
+            listDiv.appendChild(criarCardPedido(pedido, pedido.key));
+        });
+    });
+}
 
-        function carregarPedidosFinalizados() {
-            var listDiv = document.getElementById('lista-finalizados');
-            listDiv.innerHTML = '<p>Carregando...</p>';
-
-            database.ref('pedidos').once('value', function(snapshot) {
-                var pedidos = snapshot.val();
-                listDiv.innerHTML = '';
-
-                if (!pedidos) {
-                    listDiv.innerHTML = '<p>Nenhum pedido finalizado</p>';
-                    return;
-                }
-
-                Object.keys(pedidos).forEach(function(key) {
-                    var pedido = pedidos[key];
-                    if (pedido.statusPagamento === 'entregue') {
-                        listDiv.appendChild(criarCardPedido(pedido, key, true));
-                    }
-                });
-            });
+function carregarPedidosFinalizados() {
+    var listDiv = document.getElementById('lista-finalizados');
+    listDiv.innerHTML = '<p>Carregando...</p>';
+    database.ref('pedidos').once('value', function(snapshot) {
+        var pedidosObj = snapshot.val();
+        listDiv.innerHTML = '';
+        if (!pedidosObj) {
+            listDiv.innerHTML = '<p>Nenhum pedido finalizado</p>';
+            return;
         }
+        
+        // Converter para array e filtrar
+        var pedidosArray = [];
+        Object.keys(pedidosObj).forEach(function(key) {
+            var pedido = pedidosObj[key];
+            if (pedido.statusPagamento === 'entregue') {
+                pedidosArray.push({ key: key, ...pedido });
+            }
+        });
+        
+        // ORDENAR por DATA DE ENTREGA (mais antigos primeiro)
+        pedidosArray.sort((a, b) => {
+            var dataA = a.data.split('/').reverse().join('');
+            var dataB = b.data.split('/').reverse().join('');
+            return dataA - dataB;
+        });
+        
+        // Renderizar os pedidos ordenados
+        pedidosArray.forEach(function(pedido) {
+            listDiv.appendChild(criarCardPedido(pedido, pedido.key, true));
+        });
+    });
+}
 
         function criarCardPedido(pedido, key, finalizado = false) {
             var card = document.createElement('div');
@@ -776,113 +800,111 @@ function abrirAba(nomeAba) {
             }
         }
 
-        // ===== FUNÇÕES DO CALENDÁRIO =====
-        var mesAtual = new Date().getMonth();
-        var anoAtual = new Date().getFullYear();
+// ===== FUNÇÕES DO CALENDÁRIO =====
+var mesAtual = new Date().getMonth();
+var anoAtual = new Date().getFullYear();
 
-        function renderizarCalendario() {
-            var container = document.getElementById('calendario-container');
-            var monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            var dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-
-            var html = `
-                <div class="calendario-header">
-                    <button class="btn-mes" onclick="mesAnterior()">← Anterior</button>
-                    <h3>${monthNames[mesAtual]} de ${anoAtual}</h3>
-                    <button class="btn-mes" onclick="proximoMes()">Próximo →</button>
-                </div>
-                <div class="calendario-grid">
-            `;
-
-            // Dias da semana
-            dayNames.forEach(day => {
-                html += `<div class="dia-semana">${day}</div>`;
-            });
-
-            // Primeira semana (dias em branco)
-            var primeira = new Date(anoAtual, mesAtual, 1);
-            var diasAntes = primeira.getDay();
-            for (var i = 0; i < diasAntes; i++) {
-                html += `<div class="dia outro-mes"></div>`;
-            }
-
-            // Dias do mês
-            var ultimoDia = new Date(anoAtual, mesAtual + 1, 0).getDate();
-            for (var dia = 1; dia <= ultimoDia; dia++) {
-            var dataStr = anoAtual + '-' + String(mesAtual + 1).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
-                html += `<div class="dia sem-pedidos" id="dia-${dia}" onclick="filtrarPedidosPorDia('${dataStr}')"><div class="dia-numero">${dia}</div></div>`;
+function adicionarContadorDia(dia) {
+    var diaElement = document.getElementById('dia-' + dia);
+    if (diaElement) {
+        diaElement.classList.remove('sem-pedidos');
+        var contador = diaElement.querySelector('.dia-contador');
+        if (!contador) {
+            contador = document.createElement('div');
+            contador.className = 'dia-contador';
+            contador.textContent = '1';
+            diaElement.appendChild(contador);
+        } else {
+            contador.textContent = parseInt(contador.textContent) + 1;
+        }
+    }
 }
 
-            // Dias em branco após o mês
-            var diasDepois = 42 - (diasAntes + ultimoDia);
-            for (var i = 0; i < diasDepois; i++) {
-                html += `<div class="dia outro-mes"></div>`;
-            }
-
-            html += `</div>`;
-            container.innerHTML = html;
-
-            // Carregar contadores do Firebase
-            database.ref('pedidos').once('value', function(snapshot) {
-                var pedidos = snapshot.val();
-                if (pedidos) {
-                    Object.keys(pedidos).forEach(function(key) {
-                        var pedido = pedidos[key];
-                        if (pedido.statusPagamento !== 'entregue' && pedido.data) {
-                            var partes = pedido.data.split('-');
-                            if (partes.length === 3) {
-                                var ano = parseInt(partes[0]);
-                                var mes = parseInt(partes[1]) - 1;
-                                var dia = parseInt(partes[2]);
-
-                                if (ano === anoAtual && mes === mesAtual) {
-                                    adicionarContadorDia(dia);
-                                }
-                            }
+function renderizarCalendario() {
+    var container = document.getElementById('calendario-container');
+    var monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    var dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+    var html = ` 
+    <div class="calendario-header">
+        <button class="btn-mes" onclick="mesAnterior()">← Anterior</button>
+        <h3>${monthNames[mesAtual]} de ${anoAtual}</h3>
+        <button class="btn-mes" onclick="proximoMes()">Próximo →</button>
+    </div>
+    <div class="calendario-grid">
+    `;
+    
+    // Dias da semana
+    dayNames.forEach(day => {
+        html += `<div class="dia-semana">${day}</div>`;
+    });
+    
+    // Primeira semana (dias em branco)
+    var primeira = new Date(anoAtual, mesAtual, 1);
+    var diasAntes = primeira.getDay();
+    for (var i = 0; i < diasAntes; i++) {
+        html += `<div class="dia outro-mes"></div>`;
+    }
+    
+    // Dias do mês
+    var ultimoDia = new Date(anoAtual, mesAtual + 1, 0).getDate();
+    for (var dia = 1; dia <= ultimoDia; dia++) {
+        var dataStr = anoAtual + '-' + String(mesAtual + 1).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
+        html += `<div class="dia sem-pedidos" id="dia-${dia}" onclick="filtrarPedidosPorDia('${dataStr}')"><div class="dia-numero">${dia}</div></div>`;
+    }
+    
+    // Dias em branco após o mês
+    var diasDepois = 42 - (diasAntes + ultimoDia);
+    for (var i = 0; i < diasDepois; i++) {
+        html += `<div class="dia outro-mes"></div>`;
+    }
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    
+    // Carregar contadores do Firebase
+    database.ref('pedidos').once('value', function(snapshot) {
+        var pedidos = snapshot.val();
+        if (pedidos) {
+            Object.keys(pedidos).forEach(function(key) {
+                var pedido = pedidos[key];
+                if (pedido.statusPagamento !== 'entregue' && pedido.data) {
+                    var partes = pedido.data.split('/');
+                    if (partes.length === 3) {
+                        var dia = parseInt(partes[0]);
+                        var mes = parseInt(partes[1]) - 1;
+                        var ano = parseInt(partes[2]);
+                        if (ano === anoAtual && mes === mesAtual) {
+                            adicionarContadorDia(dia);
                         }
-                    });
+                    }
                 }
             });
         }
+    });
+}
 
-        function adicionarContadorDia(dia) {
-            var diaElement = document.getElementById('dia-' + dia);
-            if (diaElement) {
-                diaElement.classList.remove('sem-pedidos');
-                var contador = diaElement.querySelector('.dia-contador');
-                if (!contador) {
-                    contador = document.createElement('div');
-                    contador.className = 'dia-contador';
-                    contador.textContent = '1';
-                    diaElement.appendChild(contador);
-                } else {
-                    contador.textContent = parseInt(contador.textContent) + 1;
-                }
-            }
-        }
+function mesAnterior() {
+    mesAtual--;
+    if (mesAtual < 0) {
+        mesAtual = 11;
+        anoAtual--;
+    }
+    renderizarCalendario();
+}
 
-        function mesAnterior() {
-            mesAtual--;
-            if (mesAtual < 0) {
-                mesAtual = 11;
-                anoAtual--;
-            }
-            renderizarCalendario();
-        }
+function proximoMes() {
+    mesAtual++;
+    if (mesAtual > 11) {
+        mesAtual = 0;
+        anoAtual++;
+    }
+    renderizarCalendario();
+}
 
-        function proximoMes() {
-            mesAtual++;
-            if (mesAtual > 11) {
-                mesAtual = 0;
-                anoAtual++;
-            }
-            renderizarCalendario();
-        }
+// Inicializar calendário UMA ÚNICA VEZ
+renderizarCalendario();
 
-        // Inicializar calendário
-        renderizarCalendario();
- function filtrarPedidosPorDia(dataSelecionada) {
+function filtrarPedidosPorDia(dataSelecionada) {
     // Marcar que estamos filtrando por dia
     window.filtrandoPorDia = true;
     
