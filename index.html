@@ -861,27 +861,30 @@ function renderizarCalendario() {
     html += `</div>`;
     container.innerHTML = html;
     
-    // Carregar contadores do Firebase
-    database.ref('pedidos').once('value', function(snapshot) {
-        var pedidos = snapshot.val();
-        if (pedidos) {
-            Object.keys(pedidos).forEach(function(key) {
-                var pedido = pedidos[key];
-                if (pedido.statusPagamento !== 'entregue' && pedido.data) {
-                    var partes = pedido.data.split('/');
-                    if (partes.length === 3) {
-                        var dia = parseInt(partes[0]);
-                        var mes = parseInt(partes[1]) - 1;
-                        var ano = parseInt(partes[2]);
-                        if (ano === anoAtual && mes === mesAtual) {
-                            adicionarContadorDia(dia);
+    // Carregar contadores do Firebase (com delay)
+    setTimeout(function() {
+        database.ref('pedidos').once('value', function(snapshot) {
+            var pedidos = snapshot.val();
+            if (pedidos) {
+                Object.keys(pedidos).forEach(function(key) {
+                    var pedido = pedidos[key];
+                    if (pedido.statusPagamento !== 'entregue' && pedido.data) {
+                        var partes = pedido.data.split('/');
+                        if (partes.length === 3) {
+                            var dia = parseInt(partes[0]);
+                            var mes = parseInt(partes[1]) - 1;
+                            var ano = parseInt(partes[2]);
+                            if (ano === anoAtual && mes === mesAtual) {
+                                console.log('Adicionando contador para dia:', dia);
+                                adicionarContadorDia(dia);
+                            }
                         }
                     }
-                }
-            });
-        }
-    });
-}
+                });
+            }
+        });
+    }, 100);
+} // ← FECHA AQUI
 
 function mesAnterior() {
     mesAtual--;
