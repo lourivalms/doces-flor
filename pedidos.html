@@ -871,14 +871,15 @@ setTimeout(function() {
     // Detectar se é CELULAR ou DESKTOP
     var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (isMobile) {
-        // CELULAR: copia a mensagem e abre WhatsApp para escolher contato
-        navigator.clipboard.writeText(message).then(() => {
-            alert('Mensagem copiada! Abra o WhatsApp e escolha o contato para colar.');
-            window.parent.window.open('https://wa.me/', '_blank');
-        }).catch(err => {
-            // Se copiar falhar, apenas abre o WhatsApp
-            window.parent.window.open('https://wa.me/', '_blank');
+if (isMobile) {
+    // CELULAR: copia a mensagem e abre WhatsApp
+    navigator.clipboard.writeText(message).then(() => {
+        alert('Mensagem copiada! Abra o WhatsApp e escolha a conversa para colar.');
+        // Abre o app do WhatsApp (sem link direto, apenas o app)
+        window.parent.window.open('whatsapp://', '_blank');
+    }).catch(err => {
+        // Se copiar falhar, apenas abre o WhatsApp
+        window.parent.window.open('whatsapp://', '_blank');
         });
     } else {
         // DESKTOP: abre com a mensagem pré-preenchida
