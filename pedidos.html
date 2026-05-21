@@ -872,14 +872,11 @@ setTimeout(function() {
     var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
 if (isMobile) {
-    // CELULAR: copia a mensagem e abre WhatsApp
+    // CELULAR: apenas copia a mensagem (sem tentar abrir WhatsApp)
     navigator.clipboard.writeText(message).then(() => {
-        alert('Mensagem copiada! Abra o WhatsApp e escolha a conversa para colar.');
-        // Abre o app do WhatsApp (sem link direto, apenas o app)
-        window.parent.window.open('whatsapp://', '_blank');
+        alert('Mensagem copiada! Abra o WhatsApp, escolha a conversa e cole a mensagem.');
     }).catch(err => {
-        // Se copiar falhar, apenas abre o WhatsApp
-        window.parent.window.open('whatsapp://', '_blank');
+        alert('Erro ao copiar. Tente novamente.');
         });
     } else {
         // DESKTOP: abre com a mensagem pré-preenchida
