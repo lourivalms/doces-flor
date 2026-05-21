@@ -315,24 +315,256 @@
             color: #ad1457;
         }
 
-        @media (max-width: 768px) {
-            .tabs {
-                flex-wrap: wrap;
-            }
-            
-            .tab-btn {
-                flex: 1;
-                min-width: 150px;
-            }
-            
-            .calendario-grid {
-                gap: 5px;
-            }
-            
-            .dia {
-                font-size: 0.85em;
-            }
-        }
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+        margin: 5px auto;
+    }
+
+    h1 {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 10px 8px;
+        font-size: 0.85em;
+    }
+
+    .aba-content {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .aba-content h2 {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+    }
+
+    .btn-novo-pedido {
+        padding: 15px;
+        font-size: 1.1em;
+    }
+
+    .pedido-card {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .pedido-nome {
+        font-size: 1.1em;
+    }
+
+    .pedido-info {
+        font-size: 0.85em;
+    }
+
+    .pedido-item {
+        font-size: 0.8em;
+    }
+
+    .btn-finalizar {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+
+    #calendario-container {
+        margin-top: 20px;
+        padding: 15px;
+    }
+
+    .calendario-header {
+        margin-bottom: 15px;
+    }
+
+    .calendario-header h3 {
+        font-size: 1.2em;
+    }
+
+    .btn-mes {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .calendario-grid {
+        gap: 4px;
+    }
+
+    .dia-semana {
+        padding: 5px;
+        font-size: 0.75em;
+    }
+
+    .dia {
+        border-radius: 5px;
+    }
+
+    .dia-numero {
+        font-size: 0.9em;
+    }
+
+    .dia-contador {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7em;
+    }
+
+    .modal-content {
+        width: 95%;
+        height: 95vh;
+        border-radius: 10px;
+    }
+
+    .close {
+        font-size: 1.8em;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+        margin: 0;
+    }
+
+    h1 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+
+    .tabs {
+        gap: 3px;
+        margin-bottom: 10px;
+    }
+
+    .tab-btn {
+        min-width: 80px;
+        padding: 8px 6px;
+        font-size: 0.75em;
+    }
+
+    .aba-content {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+
+    .aba-content h2 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+
+    .btn-novo-pedido {
+        padding: 12px;
+        font-size: 1em;
+    }
+
+    .pedido-card {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+    }
+
+    .pedido-header {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .pedido-nome {
+        font-size: 0.95em;
+    }
+
+    .pedido-status {
+        padding: 3px 8px;
+        font-size: 0.75em;
+    }
+
+    .pedido-info {
+        font-size: 0.75em;
+        margin: 4px 0;
+    }
+
+    .pedido-itens {
+        padding: 8px;
+        margin: 8px 0;
+    }
+
+    .pedido-item {
+        font-size: 0.75em;
+        margin: 2px 0;
+    }
+
+    .btn-finalizar {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+
+    #calendario-container {
+        margin-top: 15px;
+        padding: 10px;
+    }
+
+    .calendario-header {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .calendario-header h3 {
+        font-size: 1em;
+    }
+
+    .btn-mes {
+        padding: 5px 10px;
+        font-size: 0.75em;
+        flex: 1;
+    }
+
+    .calendario-grid {
+        gap: 3px;
+    }
+
+    .dia-semana {
+        padding: 3px;
+        font-size: 0.65em;
+    }
+
+    .dia {
+        border: 1px solid #f8bbd0;
+        border-radius: 4px;
+    }
+
+    .dia-numero {
+        font-size: 0.8em;
+    }
+
+    .dia-contador {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65em;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .close {
+        font-size: 1.5em;
+        top: 8px;
+        right: 8px;
+    }
+}
     </style>
 </head>
 <body>
