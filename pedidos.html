@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deces Flor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .item input {
+            width: 50px;
+            margin-left: 10px;
+        }
+        .item button {
+            margin-left: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .item button:hover {
+            background-color: #c82333;
+        }
+		.item-info {
+    flex: 1;
+    line-height: 1.6;
+}
+
+.item-info p {
+    margin: 5px 0;
+}
+
+.btn-remove {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    height: fit-content;
+}
+
+.btn-remove:hover {
+    background-color: #c82333;
+}
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+        }
+		#enderecoFields {
+    display: none;
+}
+#enderecoFields {
+    display: none;
+}
+
+#enderecoFields label,
+#enderecoFields input {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#enderecoFields input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+/* TEMAS DE CORES */
+body.dark {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+body.dark input,
+body.dark select,
+body.dark textarea {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+    border: 1px solid #555555 !important;
+}
+
+body.dark label {
+    color: #ffffff !important;
+}
+
+body.dark button {
+    background-color: #555555 !important;
+    color: #ffffff !important;
+}
+
+body.colorful {
+    background-color: #e8f5e8 !important;
+    color: #2e7d32 !important;
+}
+
+body.colorful input,
+body.colorful select,
+body.colorful textarea {
+    background-color: #ffffff !important;
+    color: #2e7d32 !important;
+    border: 1px solid #c8e6c9 !important;
+}
+
+body.colorful label {
+    color: #2e7d32 !important;
+}
+
+body.colorful button {
+    background-color: #e91e63 !important;
+    color: #ffffff !important;
+}
+    </style>
+
+<!-- Firebase SDK (adicione ANTES de </head>) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Doces Flor - Brigadeiros</h1>
+
+        <form id="orderForm">
+			<label for="nome">Nome:</label>
+			<input type="text" id="nome" required>
+
+            <label for="telefone">Telefone:</label>
+            <input type="text" id="telefone" required>
+			
+<div style="display: flex; gap: 10px; align-items: flex-end;">
+    <div style="flex: 1;">
+        <label for="dataEntrega">Data de Entrega ou Retirada:</label>
+        <input type="date" id="dataEntrega" required style="width: 100%; box-sizing: border-box;">
+    </div>
+    <div style="flex: 1;">
+        <label for="horarioEntrega">Horário de Entrega ou Retirada:</label>
+        <input type="time" id="horarioEntrega" required style="width: 100%; box-sizing: border-box;">
+    </div>
+</div>
+
+<label for="tipoEntrega">Tipo de Entrega:</label>
+<select id="tipoEntrega" required>
+    <option value="retirada" selected>Retirada</option>
+    <option value="entrega">Entrega</option>
+</select>
+
+<div id="enderecoFields">
+    <label for="cep">CEP:</label>
+    <input type="text" id="cep" required>
+
+    <div style="display: flex; gap: 10px; align-items: flex-end;">
+        <div style="flex: 1;">
+            <label for="endereco">Endereço:</label>
+            <input type="text" id="endereco" required style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div style="width: 80px;">
+            <label for="numero">Nº:</label>
+            <input type="text" id="numero" required style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div style="flex: 1;">
+            <label for="pontoReferencia">Complemento:</label>
+            <input type="text" id="pontoReferencia" style="width: 100%; box-sizing: border-box;">
+        </div>
+    </div>
+
+    <label for="bairro">Bairro:</label>
+    <input type="text" id="bairro" required>
+
+    <label for="cidade">Cidade:</label>
+    <input type="text" id="cidade" required>
+</div>
+
+
+<label>Sabores:</label>
+<select id="sabor" required>
+    <option value="">Selecione o sabor</option>
+    <optgroup label="Tradicionais (R$ 1,00)">
+    <option value="Amendoim">Amendoim</option>
+    <option value="Beijinho">Beijinho</option>
+    <option value="Brigadeiro">Brigadeiro</option>
+    <option value="Café">Café</option>
+    <option value="Dois Amores">Dois Amores</option>
+    <option value="Leite Ninho">Leite Ninho</option>
+    <option value="Moranguinho">Moranguinho</option>
+    <option value="Sensação">Sensação</option>
+</optgroup>
+<optgroup label="Gourmet (R$ 1,20)">
+    <option value="Chocolate Gourmet Branco">Chocolate Gourmet Branco</option>
+    <option value="Chocolate Gourmet Preto">Chocolate Gourmet Preto</option>
+    <option value="Confete">Confete</option>
+    <option value="Churros">Churros</option>
+    <option value="Ferrero Rocher">Ferrero Rocher</option>
+    <option value="Leite Ninho com Nutella">Leite Ninho com Nutella</option>
+    <option value="Negresco">Negresco</option>
+    <option value="Ovomaltine">Ovomaltine</option>
+    <option value="Prestígio">Prestígio</option>
+</optgroup>
+</select>
+			
+<label>Formato do Brigadeiro:</label>
+<select id="formato" required>
+    <option value="">Selecione o formato</option>
+    <option value="Redondo">Redondo (formato do brigadeiro)</option>
+    <option value="Flor">Flor (formato do brigadeiro)</option>
+    <option value="Coração">Coração (formato do brigadeiro)</option>
+</select>
+
+<label>Tipo de Forma (forminha):</label>
+<select id="tipoForma" required>
+    <option value="">Selecione a forminha</option>
+    <option value="Redonda">Redonda (forminha)</option>
+    <option value="Quadrada">Quadrada (forminha)</option>
+</select>
+
+<label for="cor">Cor:</label>
+<select id="cor">
+    <option value="">Selecione a cor</option>
+    <option value="Branca">Branca</option>
+    <option value="Preta">Preta</option>
+    <option value="Vermelha">Vermelha</option>
+    <option value="Rosa">Rosa</option>
+    <option value="Azul">Azul</option>
+    <option value="Verde">Verde</option>
+    <option value="Amarela">Amarela</option>
+    <option value="Roxa">Roxa</option>
+    <option value="Laranja">Laranja</option>
+    <option value="Marrom">Marrom</option>
+    <option value="Cinza">Cinza</option>
+    <option value="Dourada">Dourada</option>
+    <option value="Prateada">Prateada</option>
+    <option value="Outra">Outra (especificar)</option>
+</select>
+
+<input type="text" id="corCustomizada" placeholder="Especifique a cor" style="display:none;">
+
+<label for="quantidade">Quantidade:</label>
+<select id="quantidade" required style="width: 100%;">
+    <option value="" selected>Selecione a quantidade</option>
+    <option value="25">25</option>
+    <option value="50">50</option>
+    <option value="75">75</option>
+    <option value="100">100</option>
+    <option value="125">125</option>
+    <option value="150">150</option>
+    <option value="175">175</option>
+    <option value="200">200</option>
+    <option value="customizado">Especificar quantidade</option>
+</select>
+
+<input type="number" id="quantidadeCustomizada" placeholder="Digite a quantidade desejada" min="1" style="width: 100%; box-sizing: border-box; display: none; margin-top: 5px;">
+
+            <button type="button" id="addItem">Adicionar Item</button>
+
+            <div id="itensList"></div>
+
+<label for="valor">Valor Brigadeiros:</label>
+<input type="text" id="valor" readonly>
+
+<label for="valorFrete">Custo Frete:</label>
+<input type="text" id="valorFrete">
+
+<label for="valorTotal">Valor Total:</label>
+<input type="text" id="valorTotal" readonly>
+
+<label for="observacoes">Observações:</label>
+<textarea id="observacoes"></textarea>
+
+<label for="statusPagamento">Status Pagamento:</label>
+<select id="statusPagamento" required>
+    <option value="A pagar">A pagar</option>
+    <option value="Pago Parcialmente">Pago Parcialmente</option>
+    <option value="Pago">Pago</option>
+</select>
+
+<div id="valorPagoContainer" style="display: none;">
+    <label for="valorPago">Valor Pago:</label>
+    <input type="text" id="valorPago" placeholder="Ex: R$ 50,00">
+</div>
+
+<button type="button" id="sendWhatsApp">Enviar para WhatsApp</button>
+
+<button type="button" id="toggleSummaryBtn" style="display: none;"></button>
+
+        </form>
+
+    </div>
+
+    <script>
+
+// ===== CONFIGURAÇÃO DO FIREBASE =====
+var firebaseConfig = {
+    apiKey: "AIzaSyCYqic9IlxUXlS_yEuMLZvmg16wGh5_Ing",
+    authDomain: "doces-flor.firebaseapp.com",
+    databaseURL: "https://doces-flor-default-rtdb.firebaseio.com",
+    projectId: "doces-flor",
+    storageBucket: "doces-flor.firebasestorage.app",
+    messagingSenderId: "430929421910",
+    appId: "1:430929421910:web:2f1bea78c78602c3387df7",
+    measurementId: "G-KZTGCCEDXJ"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+var database = firebase.database();
+
+        // Máscaras
+function maskTelefone(value) {
+    value = value.replace(/\D/g, '');
+    if (value.length > 11) value = value.slice(0, 11);
+    if (value.length === 0) return '';
+    if (value.length <= 2) return '(' + value;
+    if (value.length <= 7) return '(' + value.slice(0, 2) + ') ' + value.slice(2);
+    return '(' + value.slice(0, 2) + ') ' + value.slice(2, 7) + '-' + value.slice(7);
+}
+        function maskCEP(value) {
+            return value.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+        function maskData(value) {
+            value = value.replace(/\D/g, '');
+            if (value.length >= 2) value = value.slice(0,2) + '/' + value.slice(2);
+            if (value.length >= 5) value = value.slice(0,5) + '/' + value.slice(5,9);
+            return value.slice(0,10);
+        }
+        function validateDate(dateStr) {
+            const [day, month, year] = dateStr.split('/').map(Number);
+            const date = new Date(year, month - 1, day);
+            return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+        }
+
+        document.getElementById('telefone').addEventListener('input', function(e) {
+            e.target.value = maskTelefone(e.target.value);
+        });
+        document.getElementById('cep').addEventListener('input', function(e) {
+            e.target.value = maskCEP(e.target.value);
+        });
+		// Controlar campo de quantidade customizada
+document.getElementById('quantidade').addEventListener('change', function() {
+    const quantidadeCustomizada = document.getElementById('quantidadeCustomizada');
+    
+    if (this.value === 'customizado') {
+        quantidadeCustomizada.style.display = 'block';
+        quantidadeCustomizada.focus();
+    } else {
+        quantidadeCustomizada.style.display = 'none';
+        quantidadeCustomizada.value = '';
+    }
+});
+// Controlar campos de endereço baseado no tipo de entrega
+function toggleAddressFields(selectedValue) {
+    const fields = ['cep', 'endereco', 'bairro', 'cidade', 'numero', 'pontoReferencia'];
+    const isEntrega = selectedValue === 'entrega';
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.disabled = !isEntrega;
+            if (!isEntrega) {
+                field.value = ''; // Limpar o valor quando desabilitado
+            }
+        }
+    });
+}
+document.getElementById('cor').addEventListener('change', function() {
+    const corCustomizada = document.getElementById('corCustomizada');
+    if (this.value === 'Outra') {
+        corCustomizada.style.display = 'block';
+        corCustomizada.focus();
+    } else {
+        corCustomizada.style.display = 'none';
+        corCustomizada.value = '';
+    }
+});
+document.getElementById('tipoEntrega').addEventListener('change', function() {
+    const enderecoDiv = document.getElementById('enderecoFields');
+    const isEntrega = this.value === 'entrega';
+    
+    // Mostrar ou ocultar os campos
+    enderecoDiv.style.display = isEntrega ? 'block' : 'none';
+    
+    // Habilitar ou desabilitar os campos
+    toggleAddressFields(this.value);
+});
+
+document.getElementById('statusPagamento').addEventListener('change', function() {
+    const valorPagoContainer = document.getElementById('valorPagoContainer');
+    const valorPagoField = document.getElementById('valorPago');
+    
+    if (this.value === 'Pago Parcialmente') {
+        valorPagoContainer.style.display = 'block';
+        valorPagoField.focus();
+    } else {
+        valorPagoContainer.style.display = 'none';
+        valorPagoField.value = '';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializa com Retirada (sem endereço visível)
+    document.getElementById('enderecoFields').style.display = 'none';
+    toggleAddressFields('retirada');
+});
+
+// Validar data de entrega
+function validarDataEntrega() {
+    const dataEntrega = document.getElementById('dataEntrega').value;
+    const hoje = new Date().toISOString().split('T')[0];
+    if (dataEntrega < hoje) {
+        alert('Data de entrega não pode ser anterior à data atual.');
+        document.getElementById('dataEntrega').value = '';
+    }
+}
+
+document.getElementById('dataEntrega').addEventListener('blur', validarDataEntrega);
+
+        // Autocomplete CEP
+document.getElementById('cep').addEventListener('blur', function() {
+    const cep = this.value.replace(/\D/g, '');
+    if (cep.length === 8) {
+		fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    document.getElementById('endereco').value = data.logradouro;
+                    document.getElementById('bairro').value = data.bairro;
+                    document.getElementById('cidade').value = data.localidade;
+                }
+            })
+            .catch(error => console.error('Erro ao buscar CEP:', error));
+    }
+});
+document.getElementById('valorPago').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length === 0) {
+        e.target.value = '';
+    } else {
+        let numValue = parseInt(value) / 100;
+        e.target.value = 'R$ ' + numValue.toFixed(2).replace('.', ',');
+    }
+});
+
+document.getElementById('valorFrete').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length === 0) {
+        e.target.value = '';
+    } else {
+        let numValue = parseInt(value) / 100;
+        e.target.value = 'R$ ' + numValue.toFixed(2).replace('.', ',');
+    }
+    updateValorTotal();
+});
+
+function updateValorTotal() {
+    // Get elements com os IDs corretos
+    let brigadeirosEl = document.getElementById('valor');
+    let freteEl = document.getElementById('valorFrete');
+    let totalEl = document.getElementById('valorTotal');
+
+    // Get raw values
+    let brigadeirosVal = brigadeirosEl ? brigadeirosEl.value : '';
+    let freteVal = freteEl ? freteEl.value : '';
+
+    console.log('Valor Brigadeiros raw:', brigadeirosVal);
+    console.log('Custo Frete raw:', freteVal);
+
+    // Function to clean and parse value
+    function cleanValue(val) {
+        if (!val) return 0;
+        return parseFloat(val.replace('R$', '').replace(',', '.').trim()) || 0;
+    }
+
+    let brigadeiros = cleanValue(brigadeirosVal);
+    let frete = cleanValue(freteVal);
+
+    console.log('Valor Brigadeiros cleaned:', brigadeiros);
+    console.log('Custo Frete cleaned:', frete);
+
+    let total = brigadeiros + frete;
+    console.log('Total sum:', total);
+
+    // Format as R$ X,XX
+    let formatted = 'R$ ' + total.toFixed(2).replace('.', ',');
+    console.log('Formatted total:', formatted);
+
+    // Set the value
+    if (totalEl) {
+        totalEl.value = formatted;
+    }
+}
+        // Itens
+        let itens = [];
+document.getElementById('addItem').addEventListener('click', function() {
+const sabor = document.getElementById('sabor').value;
+const formato = document.getElementById('formato').value;
+const tipoForma = document.getElementById('tipoForma').value;
+let cor = document.getElementById('cor').value;
+if (cor === 'Outra') {
+    cor = document.getElementById('corCustomizada').value;
+}
+let quantidade;
+const selectQuantidade = document.getElementById('quantidade').value;
+
+if (selectQuantidade === 'customizado') {
+    const quantidadeCustomizada = parseInt(document.getElementById('quantidadeCustomizada').value);
+    
+    if (!quantidadeCustomizada || quantidadeCustomizada <= 0) {
+        alert('Por favor, digite uma quantidade válida!');
+        return;
+    }
+    
+    quantidade = quantidadeCustomizada;
+} else {
+    quantidade = parseInt(selectQuantidade);
+}
+
+// Validação de sabor
+if (!sabor.trim()) {
+    alert('Por favor, selecione um sabor.');
+    return;
+}
+
+// Validação de cor
+if (!cor.trim()) {
+    alert('Por favor, selecione uma cor.');
+    return;
+}
+
+document.getElementById('cor').addEventListener('change', function() {
+    const corCustomizada = document.getElementById('corCustomizada');
+    if (this.value === 'Outra') {
+        corCustomizada.style.display = 'block';
+    } else {
+        corCustomizada.style.display = 'none';
+    }
+});
+if (quantidade <= 0) {
+    alert('A quantidade deve ser maior que zero!');
+    return;
+}
+
+itens.push({ sabor, formato, tipoForma, cor, quantidade });
+    updateItensList();
+    updateValor();
+});
+function updateItensList() {
+    // Tabela de preços por sabor
+    const precosPorSabor = {
+    'Amendoim': 1.00,
+    'Beijinho': 1.00,
+    'Brigadeiro': 1.00,
+    'Café': 1.00,
+    'Dois Amores': 1.00,
+    'Leite Ninho': 1.00,
+    'Moranguinho': 1.00,
+    'Sensação': 1.00,
+    'Chocolate Gourmet Branco': 1.20,
+    'Chocolate Gourmet Preto': 1.20,
+    'Confete': 1.20,
+    'Churros': 1.20,
+    'Ferrero Rocher': 1.20,
+    'Leite Ninho com Nutella': 1.20,
+    'Negresco': 1.20,
+    'Ovomaltine': 1.20,
+    'Prestígio': 1.20
+};
+
+    const list = document.getElementById('itensList');
+    list.innerHTML = '';
+    
+    // Ordenar itens por sabor (ordem alfabética)
+    const itensOrdenados = [...itens].sort((a, b) => a.sabor.localeCompare(b.sabor));
+    
+    itensOrdenados.forEach((item, index) => {
+        // Encontrar o índice original para o botão remover funcionar
+        const indexOriginal = itens.findIndex(i => i.sabor === item.sabor && i.formato === item.formato && i.tipoForma === item.tipoForma && i.cor === item.cor && i.quantidade === item.quantidade);
+        
+        // Calcular preço unitário e valor total do item
+        const precoPorUnidade = precosPorSabor[item.sabor] || 1.00;
+        const subtotal = (precoPorUnidade * item.quantidade).toFixed(2);
+        
+        let sabor = item.sabor;
+        // Abreviar chocolates gourmet
+        sabor = sabor.replace('Chocolate Gourmet Preto', 'Choc. G. Preto');
+        sabor = sabor.replace('Chocolate Gourmet Branco', 'Choc. G. Branco');
+        
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+            <div class="item-info">
+                <p><strong>${sabor}</strong></p>
+                <p>Quantidade: ${item.quantidade}</p>
+                <p>Brigadeiro: ${item.formato} | Forma: ${item.tipoForma} | Cor: ${item.cor}</p>
+                <p><strong>Subtotal: R$ ${subtotal.replace('.', ',')} (R$ ${precoPorUnidade.toFixed(2).replace('.', ',')} × ${item.quantidade})</strong></p>
+            </div>
+            <button onclick="removeItem(${indexOriginal})" class="btn-remove">Remover</button>
+        `;
+        list.appendChild(div);
+    });
+}
+function removeItem(index) {
+    itens.splice(index, 1);
+    updateItensList();
+    updateValor();
+}
+function updateValor() {
+    // Tabela de preços por sabor
+    const precosPorSabor = {
+    'Amendoim': 1.00,
+    'Beijinho': 1.00,
+    'Brigadeiro': 1.00,
+    'Café': 1.00,
+    'Dois Amores': 1.00,
+    'Leite Ninho': 1.00,
+    'Moranguinho': 1.00,
+    'Sensação': 1.00,
+    'Chocolate Gourmet Branco': 1.20,
+    'Chocolate Gourmet Preto': 1.20,
+    'Confete': 1.20,
+    'Churros': 1.20,
+    'Ferrero Rocher': 1.20,
+    'Leite Ninho com Nutella': 1.20,
+    'Negresco': 1.20,
+    'Ovomaltine': 1.20,
+    'Prestígio': 1.20
+};
+
+    // Somar o valor CORRETO de cada item
+    let total = 0;
+    itens.forEach(item => {
+        const precoPorUnidade = precosPorSabor[item.sabor] || 1.00;
+        const valorItem = precoPorUnidade * item.quantidade;
+        total += valorItem;
+    });
+
+document.getElementById('valor').value = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    updateValorTotal();
+}
+
+function updateValorTotal() {
+    // Get elements com os IDs corretos
+    let brigadeirosEl = document.getElementById('valor');
+    let freteEl = document.getElementById('valorFrete');
+    let totalEl = document.getElementById('valorTotal');
+
+    // Get raw values
+    let brigadeirosVal = brigadeirosEl ? brigadeirosEl.value : '';
+    let freteVal = freteEl ? freteEl.value : '';
+
+    console.log('Valor Brigadeiros raw:', brigadeirosVal);
+    console.log('Custo Frete raw:', freteVal);
+
+    // Function to clean and parse value
+    function cleanValue(val) {
+        if (!val) return 0;
+        return parseFloat(val.replace('R$', '').replace(',', '.').trim()) || 0;
+    }
+
+    let brigadeiros = cleanValue(brigadeirosVal);
+    let frete = cleanValue(freteVal);
+
+    console.log('Valor Brigadeiros cleaned:', brigadeiros);
+    console.log('Custo Frete cleaned:', frete);
+
+    let total = brigadeiros + frete;
+    console.log('Total sum:', total);
+
+    // Format as R$ X,XX
+    let formatted = 'R$ ' + total.toFixed(2).replace('.', ',');
+    console.log('Formatted total:', formatted);
+
+    // Set the value
+    if (totalEl) {
+        totalEl.value = formatted;
+    }
+}
+
+        // WhatsApp
+// Global array 'itens' example (assuming it's defined elsewhere)
+// let itens = [
+//   { name: 'Brigadeiro', qty: 10, b: 'Redondo', f: 'Redonda', c: 'Branca' },
+//   // more items
+// ];
+
+function sendWhatsApp() {
+    const nome = document.getElementById('nome').value;
+    const telefone = document.getElementById('telefone').value;
+    
+    // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
+    const dataEntregaRaw = document.getElementById('dataEntrega').value;
+    const dataEntrega = dataEntregaRaw ? dataEntregaRaw.split('-').reverse().join('/') : '';
+	
+    const horarioEntrega = document.getElementById('horarioEntrega').value;
+    const tipoEntrega = document.getElementById('tipoEntrega').value;
+    const endereco = document.getElementById('endereco').value;
+    const bairro = document.getElementById('bairro').value;
+    const cidade = document.getElementById('cidade').value;
+    const numero = document.getElementById('numero').value;
+    const cep = document.getElementById('cep').value;
+    const pontoReferencia = document.getElementById('pontoReferencia').value;
+    const valor = document.getElementById('valor').value;
+    const valorFrete = document.getElementById('valorFrete').value;
+    const valorTotal = document.getElementById('valorTotal').value;
+    const statusPagamento = document.getElementById('statusPagamento').value;
+    const observacoes = document.getElementById('observacoes').value;
+    const valorPago = document.getElementById('valorPago').value;
+
+    let message = `Pedidos - Doces Flor\n\n`;
+    message += `Nome: ${nome}\n`;
+    message += `Telefone: ${telefone}\n`;
+message += `Data: ${dataEntrega} às ${horarioEntrega}\n`;
+    if (tipoEntrega === 'retirada') {
+        message += `Tipo de Entrega: Retirada\n`;
+    }
+    if (tipoEntrega === 'entrega') {
+    const enderecoBuscaMapas = `${endereco}, ${numero}, ${bairro}, ${cidade}`;
+    const linkMapas = `https://www.google.com/maps/search/${encodeURIComponent(enderecoBuscaMapas)}`;
+    message += `Endereço: ${endereco}, ${numero}, ${bairro}, ${cidade}, CEP: ${cep} - ${linkMapas}\n`;
+    if (pontoReferencia) {
+        message += `Ponto de Referência: ${pontoReferencia}\n`;
+    }
+}
+message += `──────────\nItens:\n`;
+
+// Verificar se todos os itens têm as mesmas características
+const primeiroItem = itens[0];
+const todosIguais = itens.every(item => 
+    item.formato === primeiroItem.formato && 
+    item.tipoForma === primeiroItem.tipoForma && 
+    item.cor === primeiroItem.cor
+);
+
+// Se apenas um item, exibir no formato de características
+if (itens.length === 1) {
+    const item = itens[0];
+    let sabor = item.sabor;
+    sabor = sabor.replace('Chocolate Gourmet Preto', 'Choc. G. Preto');
+    sabor = sabor.replace('Chocolate Gourmet Branco', 'Choc. G. Branco');
+    
+message += `${sabor} - Qtd:${item.quantidade}\n`;
+message += `B: ${item.formato} | F: ${item.tipoForma}/${item.cor}\n`;
+} else if (todosIguais) {
+    // Se todos forem iguais, exibir lista simples + características
+    itens.forEach((item) => {
+        let sabor = item.sabor;
+        sabor = sabor.replace('Chocolate Gourmet Preto', 'Choc. G. Preto');
+        sabor = sabor.replace('Chocolate Gourmet Branco', 'Choc. G. Branco');
+        
+        message += `${sabor} - Qtd:${item.quantidade}\n`;
+    });
+    
+    message += `\nBrigadeiro: ${primeiroItem.formato}\n`;
+    message += `Forma: ${primeiroItem.tipoForma}/${primeiroItem.cor}\n`;
+} else {
+    // Se forem diferentes, exibir cada item com suas características
+    itens.forEach((item, index) => {
+        let sabor = item.sabor;
+        sabor = sabor.replace('Chocolate Gourmet Preto', 'Choc. G. Preto');
+        sabor = sabor.replace('Chocolate Gourmet Branco', 'Choc. G. Branco');
+        
+        message += `${sabor} - Qtd:${item.quantidade}\n`;
+        message += `B: ${item.formato} | F: ${item.tipoForma}/${item.cor}\n`;
+        
+        // Adicionar espaço entre itens (exceto o último)
+        if (index < itens.length - 1) {
+            message += `\n`;
+        }
+    });
+}
+message += `──────────\n`;
+    // Verificar se há frete
+    if (valorFrete && valorFrete !== 'R$ 0,00' && valorFrete.trim() !== '') {
+        message += `Valor Brigadeiros: ${valor}\n`;
+        message += `Valor Frete: ${valorFrete}\n`;
+        message += `Valor Total: ${valorTotal}\n`;
+    } else {
+        // Se não houver frete, exibir apenas o total
+        message += `Valor Total: ${valorTotal}\n`;
+    }
+    message += `Status Pagamento: ${statusPagamento}\n`;
+    if (valorPago) {
+        message += `Valor Pago: ${valorPago}\n`;
+    }
+    message += `\──────────\n`;
+    if (observacoes) {
+        message += `Observações: ${observacoes}\n`;
+    }
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+// ===== SALVAR NO FIREBASE =====
+var pedido = {
+    nome: nome,
+    telefone: telefone,
+    data: dataEntrega,
+    hora: horarioEntrega,
+    tipoEntrega: tipoEntrega,
+    endereco: tipoEntrega === 'entrega' ? {
+        cep: document.getElementById('cep').value,
+        logradouro: document.getElementById('endereco').value,
+        numero: document.getElementById('numero').value,
+        bairro: document.getElementById('bairro').value,
+        cidade: document.getElementById('cidade').value,
+        complemento: document.getElementById('pontoReferencia').value
+    } : null,
+    itens: itens,
+    valorBrigadeiros: parseFloat(document.getElementById('valor').value.replace('R$ ', '').replace(',', '.')),
+    valorFrete: parseFloat(document.getElementById('valorFrete').value.replace('R$ ', '').replace(',', '.')),
+    valorTotal: parseFloat(document.getElementById('valorTotal').value.replace('R$ ', '').replace(',', '.')),
+    statusPagamento: document.getElementById('statusPagamento').value,
+    observacoes: document.getElementById('observacoes').value,
+    timestamp: Date.now()
+};
+
+database.ref('pedidos/' + Date.now()).set(pedido).then(function() {
+    alert('✅ Pedido salvo com sucesso!');
+}).catch(function(error) {
+    alert('❌ Erro ao salvar: ' + error.message);
+});
+    window.open(whatsappUrl, '_blank');
+}
+
+document.getElementById('sendWhatsApp').addEventListener('click', sendWhatsApp);
+    </script>
+</body>
+</html>
