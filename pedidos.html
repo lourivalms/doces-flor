@@ -733,13 +733,16 @@ function updateValorTotal() {
 // ];
 
 function sendWhatsApp() {
+    // ===== VALIDAÇÃO: Verificar se tem itens =====
+    if (!itens || itens.length === 0) {
+        alert('❌ Adicione pelo menos um item antes de enviar!');
+        return;
+    }
     const nome = document.getElementById('nome').value;
     const telefone = document.getElementById('telefone').value;
-    
     // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
     const dataEntregaRaw = document.getElementById('dataEntrega').value;
     const dataEntrega = dataEntregaRaw ? dataEntregaRaw.split('-').reverse().join('/') : '';
-	
     const horarioEntrega = document.getElementById('horarioEntrega').value;
     const tipoEntrega = document.getElementById('tipoEntrega').value;
     const endereco = document.getElementById('endereco').value;
@@ -835,7 +838,11 @@ message += `──────────\n`;
     if (observacoes) {
         message += `Observações: ${observacoes}\n`;
     }
+// Abrir WhatsApp com delay para garantir que Firebase salvou primeiro
+setTimeout(function() {
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.parent.window.open(whatsappUrl, '_blank');
+}, 1000);
 // ===== SALVAR NO FIREBASE =====
 var pedido = {
     nome: nome,
@@ -865,9 +872,9 @@ database.ref('pedidos/' + Date.now()).set(pedido).then(function() {
 }).catch(function(error) {
     alert('❌ Erro ao salvar: ' + error.message);
 });
-    window.open(whatsappUrl, '_blank');
 }
 
+// FORA da função, adicione o listener:
 document.getElementById('sendWhatsApp').addEventListener('click', sendWhatsApp);
     </script>
 </body>
