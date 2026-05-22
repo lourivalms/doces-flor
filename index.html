@@ -278,43 +278,6 @@
             display: none;
         }
 
-        /* ===== MODAL DO FORMULÁRIO ===== */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            width: 90%;
-            height: 90vh;
-            position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 2em;
-            cursor: pointer;
-            color: #d81b60;
-            z-index: 10000;
-        }
-
-        .close:hover {
-            color: #ad1457;
-        }
-
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -417,17 +380,6 @@
         font-size: 0.7em;
     }
 
-    .modal-content {
-        width: 95%;
-        height: 95vh;
-        border-radius: 10px;
-    }
-
-    .close {
-        font-size: 1.8em;
-        top: 10px;
-        right: 10px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -553,17 +505,6 @@
         font-size: 0.65em;
     }
 
-    .modal-content {
-        width: 100%;
-        height: 100vh;
-        border-radius: 0;
-    }
-
-    .close {
-        font-size: 1.5em;
-        top: 8px;
-        right: 8px;
-    }
 }
     </style>
 </head>
@@ -586,16 +527,16 @@
         
         <!-- ABA 1: CRIAR PEDIDO -->
         <div id="aba-criar" class="aba-content active">
-            <button class="btn-novo-pedido" onclick="abrirFormulario()">
-                ➕ Novo Pedido
-            </button>
+        <h2>Novo Pedido</h2>
+        <iframe id="iframe-pedidos" src="pedidos.html" style="width:100%; height:100%; border:none; min-height: 1200px;"></iframe>
         </div>
         
         <!-- ABA 2: PEDIDOS EM ANDAMENTO -->
-        <div id="aba-andamento" class="aba-content">
-            <h2>Pedidos em Andamento</h2>
-            <div id="lista-andamento"></div>
-        </div>
+<div id="aba-andamento" class="aba-content">
+  <h2>Pedidos em Andamento</h2>
+  <div id="pedidosAndamentoList"></div>
+  <!-- Calendário aqui -->
+</div>
         
         <!-- ABA 3: PEDIDOS FINALIZADOS -->
         <div id="aba-finalizados" class="aba-content">
@@ -605,14 +546,6 @@
         
         <!-- CALENDÁRIO (aparece em todas as abas) -->
         <div id="calendario-container"></div>
-    </div>
-
-    <!-- IFRAME para o formulário de pedidos (oculto) -->
-    <div id="modal-formulario" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="fecharFormulario()">&times;</span>
-            <iframe id="iframe-pedidos" src="pedidos.html" style="width:100%; height:100%; border:none;"></iframe>
-        </div>
     </div>
 
     <script>
@@ -634,106 +567,190 @@
 
 // ===== FUNÇÕES DAS ABAS =====
 function abrirAba(nomeAba) {
-    // Esconder todas as abas
-    var abas = document.querySelectorAll('.aba-content');
-    abas.forEach(aba => aba.classList.remove('active'));
+  // Esconder todas as abas
+  var abas = document.querySelectorAll('.aba-content');
+  abas.forEach(aba => aba.classList.remove('active'));
 
-    // Remover ativo de todos os botões
-    var botoes = document.querySelectorAll('.tab-btn');
-    botoes.forEach(botao => botao.classList.remove('active'));
+  // Remover ativo de todos os botões
+  var botoes = document.querySelectorAll('.tab-btn');
+  botoes.forEach(botao => botao.classList.remove('active'));
 
-    // Mostrar aba selecionada
-    document.getElementById('aba-' + nomeAba).classList.add('active');
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
+  // Mostrar aba selecionada
+  document.getElementById('aba-' + nomeAba).classList.add('active');
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
 
-    // Carregar dados (APENAS se não for filtro de dia)
-    if (nomeAba === 'andamento' && !window.filtrandoPorDia) {
-        carregarPedidosAndamento();
-    } else if (nomeAba === 'finalizados') {
-        carregarPedidosFinalizados();
-    }
+  // Carregar dados (APENAS se não for filtro de dia)
+  if (nomeAba === 'andamento' && !window.filtrandoPorDia) {
+    carregarPedidosAndamento();
+  } else if (nomeAba === 'finalizados') {
+    carregarPedidosFinalizados();
+  }
 
-    // Sempre mostrar calendário
-    renderizarCalendario();
+  // Sempre mostrar calendário
+  renderizarCalendario();
 }
 
-        // ===== FUNÇÕES DO FORMULÁRIO =====
-        function abrirFormulario() {
-            document.getElementById('modal-formulario').style.display = 'flex';
-        }
-
-        function fecharFormulario() {
-            document.getElementById('modal-formulario').style.display = 'none';
-        }
+function converterDataParaBR(dataISO) {
+  if (!dataISO) return '';
+  // Se já está em formato DD/MM/YYYY, retorna como está
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataISO)) {
+    return dataISO;
+  }
+  // Se está em formato ISO (YYYY-MM-DD), converte
+  const partes = dataISO.split('-');
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  return dataISO;
+}
 
         // ===== FUNÇÕES DOS PEDIDOS =====
 function carregarPedidosAndamento() {
-    var listDiv = document.getElementById('lista-andamento');
-    listDiv.innerHTML = '<p>Carregando...</p>';
-    database.ref('pedidos').once('value', function(snapshot) {
-        var pedidosObj = snapshot.val();
-        listDiv.innerHTML = '';
-        if (!pedidosObj) {
-            listDiv.innerHTML = '<p>Nenhum pedido em andamento</p>';
-            return;
+  const lista = document.getElementById('pedidosAndamentoList');
+  if (!lista) return;
+
+  // Limpa a lista antes de carregar
+  lista.innerHTML = '';
+
+  try {
+    firebase.database().ref('pedidos').once('value', (snapshot) => {
+      const pedidos = [];
+      snapshot.forEach((child) => {
+        const pedido = child.val();
+        // Filtra os que NÃO estão com statusPagamento === 'Pago'
+        if (pedido.statusPagamento === 'entregue') return;
+        // Verifica se dataEntrega existe
+        if (!pedido.dataEntrega) return;
+        pedido.key = child.key;
+        pedidos.push(pedido);
+      });
+
+      if (pedidos.length === 0) {
+        lista.innerHTML = '<p>Nenhum pedido em andamento</p>';
+        return;
+      }
+
+      // Função auxiliar para converter data no formato DD/MM/YYYY para Date
+      function parseData(dataStr) {
+        // Verifica se está no formato ISO (YYYY-MM-DD)
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dataStr)) {
+          return new Date(dataStr + 'T00:00:00');
         }
-        
-        // Converter para array e filtrar
-        var pedidosArray = [];
-        Object.keys(pedidosObj).forEach(function(key) {
-            var pedido = pedidosObj[key];
-            if (pedido.statusPagamento !== 'entregue') {
-                pedidosArray.push({ key: key, ...pedido });
-            }
-        });
-        
-        // ORDENAR por DATA DE ENTREGA (mais antigos primeiro)
-        pedidosArray.sort((a, b) => {
-            var dataA = a.data.split('/').reverse().join('');
-            var dataB = b.data.split('/').reverse().join('');
-            return dataA - dataB;
-        });
-        
-        // Renderizar os pedidos ordenados
-        pedidosArray.forEach(function(pedido) {
-            listDiv.appendChild(criarCardPedido(pedido, pedido.key));
-        });
+        // Caso contrário, assume DD/MM/YYYY
+        const partes = dataStr.split('/');
+        if (partes.length === 3) {
+          return new Date(partes[2], partes[1] - 1, partes[0]);
+        }
+        return null;
+      }
+
+      // Ordena por data de entrega (mais próximos primeiro)
+      pedidos.sort((a, b) => {
+        const dataA = parseData(a.dataEntrega);
+        const dataB = parseData(b.dataEntrega);
+        if (!dataA && !dataB) return 0;
+        if (!dataA) return 1;
+        if (!dataB) return -1;
+        return dataA - dataB;
+      });
+
+// Exibe os pedidos
+pedidos.forEach((pedido) => {
+  const div = document.createElement('div');
+  div.className = 'pedido-card';
+  div.innerHTML = `
+    <div class="pedido-header">
+      <div class="pedido-nome">${pedido.nome || 'N/A'}</div>
+      <div class="pedido-status status-andamento">${pedido.statusPagamento || 'A pagar'}</div>
+    </div>
+    <div class="pedido-info">
+      <strong>Telefone:</strong> ${pedido.telefone || 'N/A'}
+    </div>
+    <div class="pedido-info">
+      <strong>Data de entrega:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'}
+    </div>
+    <div class="pedido-info">
+      <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega || 'N/A'}
+    </div>
+    <div class="pedido-info">
+  <strong>Valor total:</strong> ${pedido.valor || pedido.valorTotal || 'R$ 0,00'}
+</div>
+<div class="pedido-itens">
+  <strong>Itens:</strong>
+  ${pedido.itens && Array.isArray(pedido.itens) ? pedido.itens.map(item => `<div class="pedido-item">• ${item.nome || item.sabor || 'Item'} - Qtd: ${item.quantidade}</div>`).join('') : '<div class="pedido-item">Nenhum item</div>'}
+</div>
+<button class="btn-finalizar" onclick="finalizarPedido('${pedido.key}')">✓ Finalizar Pedido</button>
+  `;
+  lista.appendChild(div);
+});
+    }, (error) => {
+      console.error('Erro ao carregar pedidos:', error);
+      lista.innerHTML = '<p>Erro ao carregar pedidos. Tente novamente mais tarde.</p>';
     });
+  } catch (error) {
+    console.error('Erro na função carregarPedidosAndamento:', error);
+    lista.innerHTML = '<p>Erro inesperado. Verifique o console.</p>';
+  }
 }
 
+// Chamar a função quando a página carregar
+document.addEventListener('DOMContentLoaded', carregarPedidosAndamento);
+
 function carregarPedidosFinalizados() {
-    var listDiv = document.getElementById('lista-finalizados');
-    listDiv.innerHTML = '<p>Carregando...</p>';
-    database.ref('pedidos').once('value', function(snapshot) {
-        var pedidosObj = snapshot.val();
-        listDiv.innerHTML = '';
-        if (!pedidosObj) {
-            listDiv.innerHTML = '<p>Nenhum pedido finalizado</p>';
-            return;
+  const ref = firebase.database().ref('pedidos');
+  ref.once('value')
+    .then(snapshot => {
+      const lista = document.getElementById('lista-finalizados');
+      lista.innerHTML = '';
+      const pedidos = [];
+      snapshot.forEach(childSnapshot => {
+        const pedido = childSnapshot.val();
+        if (pedido.statusPagamento === 'entregue') {
+          pedidos.push(pedido);
         }
-        
-        // Converter para array e filtrar
-        var pedidosArray = [];
-        Object.keys(pedidosObj).forEach(function(key) {
-            var pedido = pedidosObj[key];
-            if (pedido.statusPagamento === 'entregue') {
-                pedidosArray.push({ key: key, ...pedido });
-            }
-        });
-        
-        // ORDENAR por DATA DE ENTREGA (mais antigos primeiro)
-        pedidosArray.sort((a, b) => {
-            var dataA = a.data.split('/').reverse().join('');
-            var dataB = b.data.split('/').reverse().join('');
-            return dataA - dataB;
-        });
-        
-        // Renderizar os pedidos ordenados
-        pedidosArray.forEach(function(pedido) {
-            listDiv.appendChild(criarCardPedido(pedido, pedido.key, true));
-        });
+      });
+      if (pedidos.length === 0) {
+        lista.innerHTML = '<p>Nenhum pedido finalizado</p>';
+        return;
+      }
+      pedidos.sort((a, b) => {
+        const dataA = new Date(a.dataEntrega);
+        const dataB = new Date(b.dataEntrega);
+        return dataA - dataB;
+      });
+      for (const pedido of pedidos) {
+        const card = document.createElement('div');
+        card.className = 'pedido-card';
+card.innerHTML = `
+  <div class="pedido-header">
+    <div class="pedido-nome">${pedido.nome || 'Não informado'}</div>
+    <div class="pedido-status status-entregue">Entregue ✅</div>
+  </div>
+  <div class="pedido-info">
+    <strong>Telefone:</strong> ${pedido.telefone || 'N/A'}
+  </div>
+  <div class="pedido-info">
+    <strong>Data de entrega:</strong> ${pedido.dataEntrega || 'N/A'}
+  </div>
+  <div class="pedido-info">
+    <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega || 'N/A'}
+  </div>
+  <div class="pedido-info">
+    <strong>Valor total:</strong> ${pedido.valor || pedido.valorTotal || 'R$ 0,00'}
+  </div>
+  <div class="pedido-itens">
+    <strong>Itens:</strong>
+    ${pedido.itens && Array.isArray(pedido.itens) ? pedido.itens.map(item => `<div class="pedido-item">• ${item.nome || item.sabor || 'Item'} - Qtd: ${item.quantidade}</div>`).join('') : '<div class="pedido-item">Nenhum item</div>'}
+  </div>
+`;
+        lista.appendChild(card);
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao carregar pedidos finalizados:', error);
+      document.getElementById('lista-finalizados').innerHTML = '<p>Erro ao carregar pedidos. Tente novamente.</p>';
     });
 }
 
@@ -785,20 +802,22 @@ function carregarPedidosFinalizados() {
             return card;
         }
 
-        function finalizarPedido(key) {
-            if (confirm('Tem certeza que deseja finalizar este pedido?')) {
-                database.ref('pedidos/' + key).update({
-                    statusPagamento: 'entregue'
-                }).then(function() {
-                    alert('Pedido finalizado com sucesso!');
-                    carregarPedidosAndamento();
-                    carregarPedidosFinalizados();
-                    renderizarCalendario();
-                }).catch(function(error) {
-                    alert('Erro ao finalizar pedido: ' + error.message);
-                });
-            }
-        }
+function finalizarPedido(key) {
+  if (!confirm('Tem certeza que deseja finalizar este pedido?')) {
+    return;
+  }
+  firebase.database().ref('pedidos/' + key).update({
+    statusPagamento: 'entregue'
+  }).then(() => {
+    carregarPedidosAndamento();
+    carregarPedidosFinalizados();
+    renderizarCalendario();
+    alert('Pedido finalizado com sucesso!');
+  }).catch((error) => {
+    alert('Erro ao finalizar pedido: ' + error.message);
+  });
+}
+
 
 // ===== FUNÇÕES DO CALENDÁRIO =====
 var mesAtual = new Date().getMonth();
@@ -926,7 +945,7 @@ function filtrarPedidosPorDia(dataSelecionada) {
     // Carregar pedidos e filtrar pelo dia
     database.ref('pedidos').once('value', function(snapshot) {
         var pedidos = snapshot.val();
-        var listDiv = document.getElementById('lista-andamento');
+        var listDiv = document.getElementById('pedidosAndamentoList');
         listDiv.innerHTML = '';
 
         if (!pedidos) {
@@ -942,7 +961,12 @@ function filtrarPedidosPorDia(dataSelecionada) {
             
             // Filtrar por status "em andamento" E data do dia selecionado
             // Converter a data do formulário (DD/MM/YYYY) para o formato do calendário (YYYY-MM-DD)
-        var dataPedidoFormatada = pedido.data.split('/').reverse().join('-');
+        // Converter data DD/MM/YYYY para YYYY-MM-DD para comparação
+var dataPedidoFormatada = pedido.data;
+if (pedido.data && pedido.data.includes('/')) {
+  const partes = pedido.data.split('/');
+  dataPedidoFormatada = `${partes[2]}-${partes[1]}-${partes[0]}`;
+}
 
         if (pedido.statusPagamento !== 'entregue' && dataPedidoFormatada === dataSelecionada) {
                 listDiv.appendChild(criarCardPedido(pedido, key));
