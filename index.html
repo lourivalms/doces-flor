@@ -668,9 +668,9 @@ pedidos.forEach((pedido) => {
     <div class="pedido-info">
       <strong>Telefone:</strong> ${pedido.telefone || 'N/A'}
     </div>
-    <div class="pedido-info">
-      <strong>Data de entrega:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'}
-    </div>
+<div class="pedido-info">
+  <strong>Data de entrega:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''} ${pedido.horarioEntrega ? 'às ' + pedido.horarioEntrega : ''}
+</div>
     <div class="pedido-info">
       <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega || 'N/A'}
     </div>
@@ -731,9 +731,9 @@ card.innerHTML = `
   <div class="pedido-info">
     <strong>Telefone:</strong> ${pedido.telefone || 'N/A'}
   </div>
-  <div class="pedido-info">
-    <strong>Data de entrega:</strong> ${pedido.dataEntrega || 'N/A'}
-  </div>
+<div class="pedido-info">
+  <strong>Data de entrega:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''} ${pedido.horarioEntrega ? 'às ' + pedido.horarioEntrega : ''}
+</div>
   <div class="pedido-info">
     <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega || 'N/A'}
   </div>
