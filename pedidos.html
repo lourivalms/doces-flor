@@ -742,6 +742,50 @@ function updateValorTotal() {
 //   // more items
 // ];
 
+function copiarParaClipboard(texto) {
+    return new Promise(function(resolve, reject) {
+        // Tentar navigator.clipboard primeiro
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto)
+                .then(function() {
+                    resolve(true);
+                })
+                .catch(function() {
+                    // Fallback para execCommand
+                    tentarFallbackCopy(texto, resolve, reject);
+                });
+        } else {
+            // Fallback direto
+            tentarFallbackCopy(texto, resolve, reject);
+        }
+    });
+}
+function tentarFallbackCopy(texto, resolve, reject) {
+    var textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '-9999px';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+        var sucesso = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (sucesso) {
+            resolve(true);
+        } else {
+            resolve(false);
+        }
+    } catch (e) {
+        document.body.removeChild(textarea);
+        resolve(false);
+    }
+}
 function sendWhatsApp() {
     // ===== VALIDAÇÃO: Verificar se tem itens =====
     if (!itens || itens.length === 0) {
@@ -896,13 +940,25 @@ setTimeout(function() {
     var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
 if (isMobile) {
-    // CELULAR: apenas copia a mensagem (sem tentar abrir WhatsApp)
-    navigator.clipboard.writeText(message).then(() => {
-        alert('Mensagem copiada! Abra o WhatsApp, escolha a conversa e cole a mensagem.');
-    }).catch(err => {
+    // Detectar se é Android ou iOS
+    var isAndroid = /android/i.test(navigator.userAgent);
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    // Tentar copiar com fallback
+    copiarParaClipboard(message).then(function(sucesso) {
+        if (sucesso) {
+            if (isAndroid) {
+                alert('Mensagem copiada! Abra o WhatsApp e cole a mensagem.');
+            } else if (isIOS) {
+                alert('Mensagem copiada! Abra o WhatsApp e cole a mensagem.');
+            }
+        } else {
+            alert('Erro ao copiar. Tente novamente.');
+        }
+    }).catch(function(err) {
         alert('Erro ao copiar. Tente novamente.');
-        });
-    } else {
+    });
+} else {
         // DESKTOP: abre com a mensagem pré-preenchida
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.parent.window.open(whatsappUrl, '_blank');
