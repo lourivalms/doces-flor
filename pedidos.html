@@ -355,6 +355,16 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
+// Função para converter data de ISO para DD/MM/YYYY
+function converterDataParaBR(dataISO) {
+  if (!dataISO) return '';
+  const partes = dataISO.split('-');
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  return dataISO;
+}
+
         // Máscaras
 function maskTelefone(value) {
     value = value.replace(/\D/g, '');
@@ -761,7 +771,7 @@ function sendWhatsApp() {
     let message = `Pedidos - Doces Flor\n\n`;
     message += `Nome: ${nome}\n`;
     message += `Telefone: ${telefone}\n`;
-message += `Data: ${dataEntrega} às ${horarioEntrega}\n`;
+message += `Data: ${converterDataParaBR(dataEntrega)} às ${horarioEntrega}\n`;
     if (tipoEntrega === 'retirada') {
         message += `Tipo de Entrega: Retirada\n`;
     }
@@ -840,11 +850,12 @@ message += `──────────\n`;
     }
 // ===== SALVAR NO FIREBASE =====
 var pedido = {
-    nome: nome,
-    telefone: telefone,
-    data: dataEntrega,
-    hora: horarioEntrega,
-    tipoEntrega: tipoEntrega,
+  nome: nome,
+  telefone: telefone,
+  data: converterDataParaBR(dataEntrega),
+  dataEntrega: converterDataParaBR(dataEntrega),
+  hora: horarioEntrega,
+  tipoEntrega: tipoEntrega,
     endereco: tipoEntrega === 'entrega' ? {
         cep: document.getElementById('cep').value,
         logradouro: document.getElementById('endereco').value,
@@ -863,6 +874,19 @@ var pedido = {
 };
 
 // Salvar no Firebase E DEPOIS abrir WhatsApp
+function converterDataParaBR(dataISO) {
+  if (!dataISO) return '';
+  // Se já está em formato DD/MM/YYYY, retorna como está
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dataISO)) {
+    return dataISO;
+  }
+  // Se está em formato ISO (YYYY-MM-DD), converte
+  const partes = dataISO.split('-');
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  return dataISO;
+}
 database.ref('pedidos/' + Date.now()).set(pedido).then(function() {
     alert('✅ Pedido salvo com sucesso!');
     
