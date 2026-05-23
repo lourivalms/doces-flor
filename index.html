@@ -505,6 +505,111 @@
         font-size: 0.65em;
     }
 
+/* Resumo de informações (visível por padrão) */
+.pedido-info-resumo {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  border-left: 4px solid #d81b60;
+}
+
+/* Detalhes (ocultos por padrão) */
+.pedido-detalhes {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  border-left: 4px solid #d81b60;
+  transition: all 0.3s ease;
+}
+
+/* Container dos botões */
+.pedido-botoes {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+/* Botão Finalizar Pedido */
+.btn-finalizar,
+.btn-mais-info {
+  flex: 1;
+  min-width: 150px;
+  background: #d81b60;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-finalizar:hover,
+.btn-mais-info:hover {
+  background: #ad1457;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .pedido-botoes {
+    flex-direction: column;
+  }
+  
+/* Resumo de informações (visível por padrão) */
+.pedido-info-resumo {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  border-left: 4px solid #d81b60;
+}
+
+/* Detalhes (ocultos por padrão) */
+.pedido-detalhes {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  border-left: 4px solid #d81b60;
+  transition: all 0.3s ease;
+}
+
+/* Container dos botões */
+.pedido-botoes {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+/* Botão Finalizar Pedido */
+.btn-finalizar,
+.btn-mais-info {
+  flex: 1;
+  min-width: 150px;
+  background: #d81b60;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-finalizar:hover,
+.btn-mais-info:hover {
+  background: #ad1457;
+}
+
+    button {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    }
 }
     </style>
 </head>
@@ -660,28 +765,81 @@ function carregarPedidosAndamento() {
 pedidos.forEach((pedido) => {
   const div = document.createElement('div');
   div.className = 'pedido-card';
+
+  // Formatar valor
+  var valorFormatado = pedido.valor || pedido.valorTotal || 'R$ 0,00';
+  if (typeof valorFormatado === 'number') {
+    valorFormatado = 'R$ ' + valorFormatado.toFixed(2).replace('.', ',');
+  }
+
+var itensHTML = '';
+if (pedido.itens && Array.isArray(pedido.itens)) {
+  pedido.itens.forEach(item => {
+    let detalhes = `${item.formato || 'N/A'}`;
+    
+    if (item.tipoForma && item.cor) {
+      detalhes += ` | ${item.tipoForma}/${item.cor}`;
+    } else if (item.tipoForma) {
+      detalhes += ` | ${item.tipoForma}`;
+    } else if (item.cor) {
+      detalhes += ` | ${item.cor}`;
+    }
+    
+    itensHTML += `
+      <div class="pedido-item">
+        • <strong>${item.nome || item.sabor || 'Item'}</strong> - Qtd: ${item.quantidade}<br>
+        <span style="margin-left: 20px; font-size: 0.9em; color: #666;">Formato: ${detalhes}</span>
+      </div>
+    `;
+  });
+}
+
   div.innerHTML = `
     <div class="pedido-header">
       <div class="pedido-nome">${pedido.nome || 'N/A'}</div>
       <div class="pedido-status status-andamento">${pedido.statusPagamento || 'A pagar'}</div>
     </div>
-    <div class="pedido-info">
-      <strong>Telefone:</strong> ${pedido.telefone || 'N/A'}
+    
+    <!-- RESUMO VISÍVEL -->
+    <div class="pedido-info-resumo">
+      <div class="pedido-info"><strong>Telefone:</strong> ${pedido.telefone || 'N/A'}</div>
+      <div class="pedido-info"><strong>Data:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''}</div>
+      <div class="pedido-info"><strong>Valor:</strong> ${valorFormatado}</div>
     </div>
-<div class="pedido-info">
-  <strong>Data de entrega:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''} ${pedido.horarioEntrega ? 'às ' + pedido.horarioEntrega : ''}
-</div>
-    <div class="pedido-info">
-      <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega || 'N/A'}
-    </div>
-    <div class="pedido-info">
-  <strong>Valor total:</strong> ${pedido.valor || pedido.valorTotal || 'R$ 0,00'}
-</div>
+
+    <!-- DETALHES OCULTOS -->
+    <div class="pedido-detalhes" id="detalhes-${pedido.key}" style="display: none;">
+${pedido.tipoEntrega === 'retirada' ? `
+  <div class="pedido-info">
+    <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega}
+  </div>
+` : ''}
+      ${pedido.tipoEntrega === 'entrega' ? `
+        <div class="pedido-info">
+          <strong>Endereço:</strong> ${pedido.endereco ? pedido.endereco.logradouro + ', ' + pedido.endereco.numero + ' - ' + pedido.endereco.bairro + ', ' + pedido.endereco.cidade : 'N/A'}
+        </div>
+      ` : ''}
 <div class="pedido-itens">
-  <strong>Itens:</strong>
-  ${pedido.itens && Array.isArray(pedido.itens) ? pedido.itens.map(item => `<div class="pedido-item">• ${item.nome || item.sabor || 'Item'} - Qtd: ${item.quantidade}</div>`).join('') : '<div class="pedido-item">Nenhum item</div>'}
+  ${itensHTML}
 </div>
-<button class="btn-finalizar" onclick="finalizarPedido('${pedido.key}')">✓ Finalizar Pedido</button>
+      <div class="pedido-info">
+        <strong>Observações:</strong> ${pedido.observacoes || 'Nenhuma'}
+      </div>
+      <div class="pedido-info">
+        <strong>Status Pagamento:</strong> ${pedido.statusPagamento || 'N/A'}
+      </div>
+${pedido.statusPagamento === 'Pago Parcialmente' ? `
+  <div class="pedido-info">
+    <strong>Valor Pago:</strong> ${pedido.valorPago || 'Aguardando informação'}
+  </div>
+` : ''}
+    </div>
+
+    <!-- BOTÕES -->
+    <div class="pedido-botoes">
+      <button class="btn-finalizar" onclick="toggleDetalhes('${pedido.key}')">ℹ️ Mais Informações</button>
+      <button class="btn-finalizar" onclick="finalizarPedido('${pedido.key}')">✓ Finalizar Pedido</button>
+    </div>
   `;
   lista.appendChild(div);
 });
@@ -720,33 +878,86 @@ function carregarPedidosFinalizados() {
         const dataB = new Date(b.dataEntrega);
         return dataA - dataB;
       });
-      for (const pedido of pedidos) {
-        const card = document.createElement('div');
-        card.className = 'pedido-card';
-card.innerHTML = `
-  <div class="pedido-header">
-    <div class="pedido-nome">${pedido.nome || 'Não informado'}</div>
-    <div class="pedido-status status-entregue">Entregue ✅</div>
-  </div>
+for (const pedido of pedidos) {
+  const card = document.createElement('div');
+  card.className = 'pedido-card';
+
+  // Formatar valor
+  var valorFormatado = pedido.valor || pedido.valorTotal || 'R$ 0,00';
+  if (typeof valorFormatado === 'number') {
+    valorFormatado = 'R$ ' + valorFormatado.toFixed(2).replace('.', ',');
+  }
+
+var itensHTML = '';
+if (pedido.itens && Array.isArray(pedido.itens)) {
+  pedido.itens.forEach(item => {
+    let detalhes = `${item.formato || 'N/A'}`;
+    
+    if (item.tipoForma && item.cor) {
+      detalhes += ` | ${item.tipoForma}/${item.cor}`;
+    } else if (item.tipoForma) {
+      detalhes += ` | ${item.tipoForma}`;
+    } else if (item.cor) {
+      detalhes += ` | ${item.cor}`;
+    }
+    
+    itensHTML += `
+      <div class="pedido-item">
+        • <strong>${item.nome || item.sabor || 'Item'}</strong> - Qtd: ${item.quantidade}<br>
+        <span style="margin-left: 20px; font-size: 0.9em; color: #666;">Formato: ${detalhes}</span>
+      </div>
+    `;
+  });
+}
+
+  card.innerHTML = `
+    <div class="pedido-header">
+      <div class="pedido-nome">${pedido.nome || 'Não informado'}</div>
+      <div class="pedido-status status-entregue">Entregue ✅</div>
+    </div>
+    
+    <!-- RESUMO VISÍVEL -->
+    <div class="pedido-info-resumo">
+      <div class="pedido-info"><strong>Telefone:</strong> ${pedido.telefone || 'N/A'}</div>
+      <div class="pedido-info"><strong>Data:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''}</div>
+      <div class="pedido-info"><strong>Valor:</strong> ${valorFormatado}</div>
+    </div>
+
+    <!-- DETALHES OCULTOS -->
+    <div class="pedido-detalhes" id="detalhes-${pedido.key}" style="display: none;">
+${pedido.tipoEntrega === 'retirada' ? `
   <div class="pedido-info">
-    <strong>Telefone:</strong> ${pedido.telefone || 'N/A'}
+    <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega}
   </div>
-<div class="pedido-info">
-  <strong>Data de entrega:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''} ${pedido.horarioEntrega ? 'às ' + pedido.horarioEntrega : ''}
+` : ''}
+      ${pedido.tipoEntrega === 'entrega' ? `
+        <div class="pedido-info">
+          <strong>Endereço:</strong> ${pedido.endereco ? pedido.endereco.logradouro + ', ' + pedido.endereco.numero + ' - ' + pedido.endereco.bairro + ', ' + pedido.endereco.cidade : 'N/A'}
+        </div>
+      ` : ''}
+<div class="pedido-itens">
+  ${itensHTML}
 </div>
+      <div class="pedido-info">
+        <strong>Observações:</strong> ${pedido.observacoes || 'Nenhuma'}
+      </div>
+      <div class="pedido-info">
+        <strong>Status Pagamento:</strong> ${pedido.statusPagamento || 'N/A'}
+      </div>
+${pedido.statusPagamento === 'Pago Parcialmente' ? `
   <div class="pedido-info">
-    <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega || 'N/A'}
+    <strong>Valor Pago:</strong> ${pedido.valorPago || 'Aguardando informação'}
   </div>
-  <div class="pedido-info">
-    <strong>Valor total:</strong> ${pedido.valor || pedido.valorTotal || 'R$ 0,00'}
-  </div>
-  <div class="pedido-itens">
-    <strong>Itens:</strong>
-    ${pedido.itens && Array.isArray(pedido.itens) ? pedido.itens.map(item => `<div class="pedido-item">• ${item.nome || item.sabor || 'Item'} - Qtd: ${item.quantidade}</div>`).join('') : '<div class="pedido-item">Nenhum item</div>'}
-  </div>
-`;
-        lista.appendChild(card);
-      }
+` : ''}
+    </div>
+
+    <!-- BOTÃO MAIS INFORMAÇÕES -->
+    <div class="pedido-botoes">
+      <button class="btn-finalizar" onclick="toggleDetalhes('${pedido.key}')">ℹ️ Mais Informações</button>
+    </div>
+  `;
+  lista.appendChild(card);
+}
     })
     .catch(error => {
       console.error('Erro ao carregar pedidos finalizados:', error);
@@ -754,53 +965,99 @@ card.innerHTML = `
     });
 }
 
-        function criarCardPedido(pedido, key, finalizado = false) {
-            var card = document.createElement('div');
-            card.className = 'pedido-card';
+function criarCardPedido(pedido, key, finalizado = false) {
+  var card = document.createElement('div');
+  card.className = 'pedido-card';
+  var statusClass = finalizado ? 'status-entregue' : 'status-andamento';
+  var statusTexto = finalizado ? 'Entregue ✅' : 'Em Andamento 📦';
+  
+var itensHTML = '';
+if (pedido.itens && Array.isArray(pedido.itens)) {
+  pedido.itens.forEach(item => {
+    let detalhes = `${item.formato || 'N/A'}`;
+    
+    if (item.tipoForma && item.cor) {
+      detalhes += ` | ${item.tipoForma}/${item.cor}`;
+    } else if (item.tipoForma) {
+      detalhes += ` | ${item.tipoForma}`;
+    } else if (item.cor) {
+      detalhes += ` | ${item.cor}`;
+    }
+    
+    itensHTML += `
+      <div class="pedido-item">
+        • <strong>${item.nome || item.sabor || 'Item'}</strong> - Qtd: ${item.quantidade}<br>
+        <span style="margin-left: 20px; font-size: 0.9em; color: #666;">Formato: ${detalhes}</span>
+      </div>
+    `;
+  });
+}
 
-            var statusClass = finalizado ? 'status-entregue' : 'status-andamento';
-            var statusTexto = finalizado ? 'Entregue ✅' : 'Em Andamento 📦';
+  // Formatar valor
+  var valorFormatado = pedido.valor || pedido.valorTotal || 'R$ 0,00';
+  if (typeof valorFormatado === 'number') {
+    valorFormatado = 'R$ ' + valorFormatado.toFixed(2).replace('.', ',');
+  }
 
-            var itensHTML = '';
-            if (pedido.itens && Array.isArray(pedido.itens)) {
-                pedido.itens.forEach(item => {
-                    itensHTML += `<div class="pedido-item">• ${item.sabor} - Qtd: ${item.quantidade}</div>`;
-                });
-            }
+  card.innerHTML = `
+    <div class="pedido-header">
+      <div class="pedido-nome">${pedido.nome}</div>
+      <div class="pedido-status ${statusClass}">${statusTexto}</div>
+    </div>
+    
+    <!-- INFORMAÇÕES VISÍVEIS SEM CLICAR -->
+    <div class="pedido-info-resumo">
+      <div class="pedido-info"><strong>Telefone:</strong> ${pedido.telefone || 'N/A'}</div>
+      <div class="pedido-info"><strong>Data:</strong> ${converterDataParaBR(pedido.dataEntrega) || 'N/A'} ${pedido.hora ? 'às ' + pedido.hora : ''}</div>
+      <div class="pedido-info"><strong>Valor:</strong> ${valorFormatado}</div>
+    </div>
 
-            var botaoFinalizar = !finalizado ? `<button class="btn-finalizar" onclick="finalizarPedido('${key}')">✓ Finalizar Pedido</button>` : '';
+    <!-- INFORMAÇÕES DETALHADAS (OCULTAS) -->
+    <div class="pedido-detalhes" id="detalhes-${key}" style="display: none;">
+${pedido.tipoEntrega === 'retirada' ? `
+  <div class="pedido-info">
+    <strong>Tipo de entrega:</strong> ${pedido.tipoEntrega}
+  </div>
+` : ''}
+      ${pedido.tipoEntrega === 'entrega' ? `
+        <div class="pedido-info">
+          <strong>Endereço:</strong> ${pedido.endereco ? pedido.endereco.logradouro + ', ' + pedido.endereco.numero + ' - ' + pedido.endereco.bairro + ', ' + pedido.endereco.cidade : 'N/A'}
+        </div>
+      ` : ''}
+<div class="pedido-itens">
+  ${itensHTML}
+</div>
+      <div class="pedido-info">
+        <strong>Observações:</strong> ${pedido.observacoes || 'Nenhuma'}
+      </div>
+      <div class="pedido-info">
+        <strong>Status Pagamento:</strong> ${pedido.statusPagamento || 'N/A'}
+      </div>
+${pedido.statusPagamento === 'Pago Parcialmente' ? `
+  <div class="pedido-info">
+    <strong>Valor Pago:</strong> ${pedido.valorPago || 'Aguardando informação'}
+  </div>
+` : ''}
+    </div>
 
-            card.innerHTML = `
-                <div class="pedido-header">
-                    <div class="pedido-nome">${pedido.nome}</div>
-                    <div class="pedido-status ${statusClass}">${statusTexto}</div>
-                </div>
-                <div class="pedido-info">
-                    <strong>Telefone:</strong> ${pedido.telefone}
-                </div>
-                <div class="pedido-info">
-                    <strong>Data:</strong> ${pedido.data} às ${pedido.hora}
-                </div>
-                <div class="pedido-info">
-                    <strong>Tipo:</strong> ${pedido.tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'}
-                </div>
-                ${pedido.tipoEntrega === 'entrega' ? `
-                    <div class="pedido-info">
-                        <strong>Endereço:</strong> ${pedido.endereco.logradouro}, ${pedido.endereco.numero} - ${pedido.endereco.bairro}, ${pedido.endereco.cidade}
-                    </div>
-                ` : ''}
-                <div class="pedido-itens">
-                    <strong>Itens:</strong>
-                    ${itensHTML}
-                </div>
-                <div class="pedido-info">
-                    <strong>Total:</strong> R$ ${pedido.valorTotal ? pedido.valorTotal.toFixed(2) : '0.00'}
-                </div>
-                ${botaoFinalizar}
-            `;
+    <!-- BOTÕES -->
+    <div class="pedido-botoes">
+      <button class="btn-finalizar" onclick="toggleDetalhes('${key}')">ℹ️ Mais Informações</button>
+      ${!finalizado ? `<button class="btn-finalizar" onclick="finalizarPedido('${key}')">✓ Finalizar Pedido</button>` : ''}
+    </div>
+  `;
+  
+  return card;
+}
 
-            return card;
-        }
+function toggleDetalhes(key) {
+  var detalhes = document.getElementById('detalhes-' + key);
+  if (detalhes.style.display === 'none') {
+    detalhes.style.display = 'block';
+  } else {
+    detalhes.style.display = 'none';
+  }
+}
 
 function finalizarPedido(key) {
   if (!confirm('Tem certeza que deseja finalizar este pedido?')) {
@@ -986,6 +1243,14 @@ if (pedido.data && pedido.data.includes('/')) {
     });
 }
 
+function toggleDetalhes(key) {
+  var detalhes = document.getElementById('detalhes-' + key);
+  if (detalhes.style.display === 'none') {
+    detalhes.style.display = 'block';
+  } else {
+    detalhes.style.display = 'none';
+  }
+}
     </script>
 </body>
 </html>
