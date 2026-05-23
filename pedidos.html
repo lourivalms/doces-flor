@@ -1006,6 +1006,7 @@ var pedido = {
     valorBrigadeiros: parseFloat(document.getElementById('valor').value.replace('R$ ', '').replace(',', '.')),
     valorFrete: parseFloat(document.getElementById('valorFrete').value.replace('R$ ', '').replace(',', '.')),
     valorTotal: parseFloat(document.getElementById('valorTotal').value.replace('R$ ', '').replace(',', '.')),
+    valorPago: document.getElementById('valorPago').value,
     statusPagamento: document.getElementById('statusPagamento').value,
     observacoes: document.getElementById('observacoes').value,
     timestamp: Date.now()
